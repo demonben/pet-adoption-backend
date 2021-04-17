@@ -1,12 +1,19 @@
 const express = require("express");
+const cors = require('cors')
+
 const app = express();
+app.use(cors());
+app.use(express.json());
 
-const router = require('./routes/routes')
+const router = require('./routes/routes');
 
-const port = 5000;
+app.use('/animals',require('./routes/routes'))
+
+const port = "5000";
+const host = "0.0.0.0"
 
 app.use(router)
 
-app.listen(port, () => {
-    console.log(`The server is listening on http://localhost:${port}`)
+app.listen(port, host, () => {
+    console.log(`The server is listening on http://${host}:${port}`)
 })
