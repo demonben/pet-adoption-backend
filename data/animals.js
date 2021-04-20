@@ -13,7 +13,7 @@ async function readAnimals() {
         })
     })
 }
-console.log(readAnimals)
+
 
 
 exports.readAnimals = readAnimals

@@ -1,20 +1,22 @@
 const express = require("express");
-const cors = require('cors');
-
-
 const app = express();
-app.use(cors());
-app.use(express.json());
+const cors = require('cors');
+const { postgrator } = require('./lib/db')
 
 const router = require('./routes/routes');
-
-app.use('/animals',require('./routes/routes'))
 
 const port = "5000";
 const host = "0.0.0.0"
 
-app.use(router)
+app.use(cors());
+app.use(express.json());
 
-app.listen(port, host, () => {
-    console.log(`The server is listening on http://${host}:${port}`)
+app.use("/animals", router)
+
+postgrator.migrate().then((result) => {
+    console.log(`migrated db successfully:`, result)
+    app.listen(port, host, () => {
+        console.log(`The server is listening on http://${host}:${port}`)
+    });
 })
+ 
