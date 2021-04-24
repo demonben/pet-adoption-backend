@@ -1,0 +1,1 @@
+ALTER TABLE animals ADD COLUMN userId VARCHAR(50);
