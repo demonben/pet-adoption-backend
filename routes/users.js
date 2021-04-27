@@ -13,7 +13,8 @@ const { upload } = require("../middlewares/multipart")
 
 // add request body validation
 router.post('/user', (req, res, next) => {
-    try {
+    console.log("object")
+    try { 
         const id = uuid();
         const { email, password, firstName, secondName, phone } = req.body;
         bcrypt.hash(password, 10, async (err, hash) => {
@@ -23,7 +24,7 @@ router.post('/user', (req, res, next) => {
                 if (user) {
                     res.status(403).send('user already exist with this email')
                     return;
-                }
+                }  
                 await addUser(id, email, hash, firstName, secondName, phone)
                 res.send({ email })
 

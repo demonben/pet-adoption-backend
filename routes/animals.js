@@ -5,8 +5,10 @@ const jwt = require('jsonwebtoken')
 
 const { v4: uuid } = require('uuid');
 const router = express.Router()
-const { getAnimals, createAnimal, deleteAnimal } = require("../data/animals");
+const { getAnimals, createAnimal, deleteAnimal, getAnimalById } = require("../data/animals");
+const { getUserByEmail, getUserById } = require('../data/users')
 const { auth } = require('../middlewares/auth');
+
 
 router.get("/", async (req, res, next) => {
     const results = await getAnimals()
@@ -28,17 +30,18 @@ router.get("/me", auth, async (req, res) => {
     res.send({ animals })
 })
 
-router.delete("/animalId",auth,async(req,res)=>{
+router.delete("/animalId", auth, async (req, res) => {
     const userId = req.user.id;
-    const {animalId}= req.params
+    const { animalId } = req.params
     const animal = await getAnimalById(animalId)
-    const canDeleteAnimal = animal.userId === userId;
-    if (!canDeleteAnimal ){
-        res.status(403).send({message: 'only animal created can delete'})
+    const user = await getUserById(userId)
+    const canDeleteAnimal = animal.userId === userId || user.role === 'admin';
+    if (!canDeleteAnimal) {
+        res.status(403).send({ message: 'only animal created can delete' })
         return;
     }
     await deleteAnimal(animalId);
-    res.send({message: 'deleted successfully'})
+    res.send({ message: 'deleted successfully' })
 })
 module.exports = router
 

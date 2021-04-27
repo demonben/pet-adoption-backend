@@ -11,9 +11,6 @@ const port = "5000";
 const host = "0.0.0.0"
 
 // uploading file storage
-
-
-
 app.use('/' + uploadedFilesFolderName, express.static(uploadedFilesFolderName))
 // uploading file storage
 

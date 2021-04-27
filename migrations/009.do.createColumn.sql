@@ -1,0 +1,5 @@
+ADD COLUMN NOT EXISTS (
+    ALTER TABLE users role VARCHAR(15) DEFAULT 'user'
+)
+
+

@@ -18,4 +18,11 @@ function updateUserPictureUrl(userId, pictureUrl){
     const sql = SQL`UPDATE users SET picture = ${pictureUrl} WHERE id = ${userId}`
     return query(sql)
 }
-exports.updateUserPictureUrl = updateUserPictureUrl
+exports.updateUserPictureUrl = updateUserPictureUrl 
+
+async function getUserById (userId){
+    const sql = SQL `SELECT * FROM users WHERE id=${userId}`
+    const rows = await query(sql)
+    return rows[0];
+}
+exports.getUserById = getUserById ;

@@ -1,7 +1,6 @@
 const { query } = require('../lib/db')
 const SQL = require('@nearform/sql');
 
-
 function getAnimals() {
     return query(SQL`SELECT * FROM animals`)
 }
@@ -9,7 +8,21 @@ function getAnimals() {
 exports.getAnimals = getAnimals
 
 function createAnimal(id, nameAnimal, type, adoptionStatus, picture, height, weight, color, bio, hypoallergenic, dietaryRestriction, breedOfAnimal, userId) {
+    console.log(id)
+    console.log(nameAnimal)
+    console.log(type)
+    console.log(adoptionStatus)
+    console.log(picture)
+    console.log(height)
+    console.log(weight)
+    console.log(color)
+    console.log(bio)
+    console.log(hypoallergenic)
+    console.log(dietaryRestriction)
+    console.log(breedOfAnimal)
+    console.log(userId)
     const sql = SQL`INSERT INTO animals (id, name_animal, type, adoption_status,picture,height, weight, color, bio, hypoallergenic, dietary_restrictions, breed_of_animal,userId) VALUES (${id},${nameAnimal}, ${type},${adoptionStatus},${picture},${height},${weight},${color},${bio},${hypoallergenic},${dietaryRestriction},${breedOfAnimal},${userId});`
+    console.log('added new animal')
     return query(sql)
 }
 
