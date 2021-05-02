@@ -2,19 +2,25 @@ const express = require('express');
 const { query } = require('../lib/db')
 const SQL = require('@nearform/sql');
 const jwt = require('jsonwebtoken')
+const { auth } = require('../middlewares/auth');
 
 const bcrypt = require('bcrypt')
 
 const { v4: uuid } = require('uuid');
 const router = express.Router()
 
-const { addUser, getUserByEmail } = require("../data/users")
+const { getUsers, addUser, getUserByEmail, getUserById, deleteUser } = require("../data/users")
 const { upload } = require("../middlewares/multipart")
+
+router.get("/", async (req, res, next) => {
+    const results = await getUsers()
+    res.send({ users: results })
+});
 
 // add request body validation
 router.post('/user', (req, res, next) => {
     console.log("object")
-    try { 
+    try {
         const id = uuid();
         const { email, password, firstName, secondName, phone } = req.body;
         bcrypt.hash(password, 10, async (err, hash) => {
@@ -24,17 +30,9 @@ router.post('/user', (req, res, next) => {
                 if (user) {
                     res.status(403).send('user already exist with this email')
                     return;
-                }  
+                }
                 await addUser(id, email, hash, firstName, secondName, phone)
                 res.send({ email })
-
-                //    const sql = SQL`INSERT INTO users (id, mail, password, first_name, last_name,phone_number) VALUES (${id}, ${email}, ${password},${firstName},${secondName},${phone});`;
-
-                // await query(sql).then(async () => {
-                //     const userQueryById = SQL`SELECT * FROM users WHERE id = ${id}`
-                //     const newUser = await query(userQueryById)
-                //     // res.send({ msg: "user added successfully", obg: newUser });
-                // })  
             }
         })
     } catch (err) {
@@ -43,11 +41,12 @@ router.post('/user', (req, res, next) => {
     }
 })
 
+
 // add request body validation
 router.post('/login', async (req, res, next) => {
     const { email, password } = req.body
     const user = await getUserByEmail(email)
-    
+
     if (!user) {
         res.status(404).send("user not found with this email")
         return;
@@ -56,7 +55,12 @@ router.post('/login', async (req, res, next) => {
         if (err) next(err);
         else {
             if (result) {
-                const token = jwt.sign({ id: user.id }, 'secret');
+                console.log(user)
+                const token = jwt.sign({
+                    id: user.id,
+                    name: user.first_name,
+                    lastName: user.last_name
+                }, 'secret');
                 console.log(user.id)
                 res.send({ msg: "user added successfully", token, user: { mail: user.mail, id: user.id } });
             }
@@ -66,9 +70,28 @@ router.post('/login', async (req, res, next) => {
         }
     });
 })
-
-// router.put('/:userId/picture_url',auth , upload.single('image'), async(req,res)=>{
-
-// })
+router.delete("/:userId", auth, async (req, res) => {
+    // console.log(req.user.id)
+    const userId = req.user.id;
+    const  userIdDelete  = req.params
+    // console.log("userIdDelete", userIdDelete)
+    // console.log("animalId",animalId)
+    const user = await getUserById(userIdDelete)
+    // console.log("user", user)
+    // const user = await getUserById(userId)
+    // const canDeleteAnimal = animal.userId === userId || user.role === 'admin';
+    // if (!canDeleteAnimal) {
+    //     res.status(403).send({ message: 'only animal created can delete' })
+    //     return;
+    // }
+    try {
+        console.log(userIdDelete)
+        await deleteUser(userIdDelete);
+        console.log("object2")
+        res.status(202).send({ message: 'user deleted successfully' })
+    } catch (err) {
+        // next(err)
+    }
+})
 
 module.exports = router

@@ -1,0 +1,1 @@
+ALTER TABLE animals DROP weight_var;
