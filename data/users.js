@@ -1,7 +1,7 @@
 const { query } = require('../lib/db')
 const SQL = require('@nearform/sql');
 
-function getUsers (){
+function getUsers() {
     return query(SQL`SELECT * FROM users`)
 }
 exports.getUsers = getUsers
@@ -15,26 +15,27 @@ exports.addUser = addUser
 
 async function getUserByEmail(email) {
     const row = await query(SQL`SELECT * FROM users WHERE mail =${email} `);
+    // console.log("rooow", row.RowDataPacket)
     return row[0];
 }
 exports.getUserByEmail = getUserByEmail
 
-function updateUserPictureUrl(userId, pictureUrl){
+function updateUserPictureUrl(userId, pictureUrl) {
     const sql = SQL`UPDATE users SET picture = ${pictureUrl} WHERE id = ${userId}`
     return query(sql)
 }
-exports.updateUserPictureUrl = updateUserPictureUrl 
+exports.updateUserPictureUrl = updateUserPictureUrl
 
-async function getUserById (userId){
-    // console.log("id", userId.userId)
+async function getUserById(userId) {
+    console.log("userId", userId)
 
-    const sql = SQL`SELECT * FROM users WHERE id=${userId.userId}`
+    const sql = SQL`SELECT * FROM users WHERE id=${userId}`
     const rows = await query(sql)
     // console.log("rows", rows)
 
     return rows[0];
 }
-exports.getUserById = getUserById ;
+exports.getUserById = getUserById;
 
 function deleteUser(id) {
     // console.log("test",id)
@@ -43,3 +44,11 @@ function deleteUser(id) {
     return query(sql)
 }
 exports.deleteUser = deleteUser
+
+function changeUser(userNewInfo, id) {
+    const sql = SQL`UPDATE pets_project.users
+SET first_name=${userNewInfo.firstName}, last_name=${userNewInfo.secondName},phone_number=${userNewInfo.phone},mail=${userNewInfo.email}
+WHERE id=${id};`
+    return query(sql)
+}
+exports.changeUser = changeUser

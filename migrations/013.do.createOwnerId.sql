@@ -1,0 +1,1 @@
+ALTER TABLE animals ADD COLUMN owner_id VARCHAR(200);

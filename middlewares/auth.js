@@ -13,6 +13,8 @@ function auth(req, res, next) {
          return;
      }
      req.user =decoded
+        // var decoded1 = jwt_decode(token)
+        // console.log("info", decoded1)
      next();
 })}
 

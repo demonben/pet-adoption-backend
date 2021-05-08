@@ -1,0 +1,1 @@
+INSERT INTO users (id, mail, passwordHash, first_name, last_name, phone_number, role) VALUES(7777777, 'admin@example.com', '$2y$12$phr5Dk7CxFPueKLe3K/rNOCnpeJhZ.KvWnjo.pOMT9UMSO.B.147u','admin','admin',12345,'admin' );

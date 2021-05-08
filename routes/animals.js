@@ -6,7 +6,7 @@ const fs = require('fs')
 
 const { v4: uuid } = require('uuid');
 const router = express.Router()
-const { getAnimals, createAnimal, deleteAnimal, getAnimalById, changeAnimal, getAnimalByType, updateAnimalPictureUrl } = require("../data/animals");
+const { getAnimals, createAnimal, deleteAnimal, getAnimalById, changeAnimal, getAnimalByType, updateAnimalPictureUrl, addOwner, changeStatus, getOwnPets } = require("../data/animals");
 const { getUserByEmail, getUserById } = require('../data/users')
 const { auth } = require('../middlewares/auth');
 const { upload } = require('../middlewares/multipart');
@@ -20,25 +20,24 @@ router.get("/", async (req, res, next) => {
 });
 
 router.post('/', auth, async (req, res) => {
-    const id = uuid();
-    const picture = "url"
-    //req.body.newAnimal
-    const { nameAnimal, type, adoptionStatus, height, weight, color, bio, hypoallergenic, dietaryRestriction, breedOfAnimal } = req.body;
-    await createAnimal(id, nameAnimal, type, adoptionStatus, picture, height, weight, color, bio, hypoallergenic, dietaryRestriction, breedOfAnimal, req.user.id)
-    res.send({ animal: { id, nameAnimal, type, adoptionStatus, picture, height, weight, color, bio, hypoallergenic, dietaryRestriction, breedOfAnimal } })
+    console.log("infoAnimal", req.body)
+    const { id, nameAnimal, type, adoptionStatus, height, weight, color, bio, hypoallergenic, dietaryRestriction, breedOfAnimal, urlAnimal } = req.body;
+    await createAnimal(id, nameAnimal, type, adoptionStatus, urlAnimal, height, weight, color, bio, hypoallergenic, dietaryRestriction, breedOfAnimal, req.user.id)
+    res.send({ animal: { id, nameAnimal, type, adoptionStatus, urlAnimal, height, weight, color, bio, hypoallergenic, dietaryRestriction, breedOfAnimal } })
 })
 
 router.get('/:id', auth, async (req, res) => {
     const id = req.params.id;
-    console.log(id)
     const animal = await getAnimalById(id)
     res.send({ animal })
 })
 
-router.post('/:type', auth, async (req, res) => {
-    const type = req.params;
-    console.log(type)
+router.get('/type/:type', auth, async (req, res) => {
+    const type = req.params.type;
+    console.log("type route", type)
     const animals = await getAnimalByType(type)
+    console.log("routes", animals)
+
     res.send({ animals })
 })
 
@@ -53,7 +52,6 @@ router.put('/:id/picture_url', auth, upload.single('image'), async (req, res) =>
     fs.unlinkSync(req.file.path)
     res.send({ pictureUrl: result.secure_url })
 })
-// updateAnimalPictureUrl
 
 router.get("/me", auth, async (req, res) => {
     const userId = req.user.id;
@@ -62,18 +60,15 @@ router.get("/me", auth, async (req, res) => {
 })
 
 router.delete("/:animalId", auth, async (req, res) => {
-    // console.log(req.user.id)
     const userId = req.user.id;
     const { animalId } = req.params
-    // console.log("animalId",animalId)
     const animal = await getAnimalById(animalId)
-    // console.log("animal",animal)
-    // const user = await getUserById(userId)
-    // const canDeleteAnimal = animal.userId === userId || user.role === 'admin';
-    // if (!canDeleteAnimal) {
-    //     res.status(403).send({ message: 'only animal created can delete' })
-    //     return;
-    // }
+    const user = await getUserById(userId)
+    const canDeleteAnimal = animal.userId === userId || user.role === 'admin';
+    if (!canDeleteAnimal) {
+        res.status(403).send({ message: 'only animal created can delete' })
+        return;
+    }
     try {
         await deleteAnimal(animalId);
         res.status(202).send({ message: 'animal deleted successfully' })
@@ -81,4 +76,39 @@ router.delete("/:animalId", auth, async (req, res) => {
         next(err)
     }
 })
+
+router.post("/take_pet/:pet_id/:status/:ownerId", auth, async (req, res) => {
+    try {
+
+        const userId = req.user.id;
+        const { pet_id, status, ownerId } = req.params
+        addOwner(pet_id, userId, status)
+        changeStatus(pet_id, status, userId)
+    } catch (err) {
+        console.error(err)
+    }
+})
+
+router.get('/my_pets/:owner_id', auth, async (req, res) => {
+    try {
+        const ownerId = req.params.owner_id
+        const animals = await getOwnPets(ownerId)
+        res.send({ animals })
+    } catch (err) {
+        console.error(err)
+    }
+})
+
+router.put('/return/:petId', async (req, res) => {
+    try {
+        console.log("got back")
+        const status = req.body
+        const { petId } = req.params
+        changeStatus(petId, null, null)
+    } catch (err) {
+        console.error(err)
+    }
+})
+
+
 module.exports = router

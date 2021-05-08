@@ -9,7 +9,7 @@ const bcrypt = require('bcrypt')
 const { v4: uuid } = require('uuid');
 const router = express.Router()
 
-const { getUsers, addUser, getUserByEmail, getUserById, deleteUser } = require("../data/users")
+const { getUsers, addUser, getUserByEmail, getUserById, deleteUser, changeUser } = require("../data/users")
 const { upload } = require("../middlewares/multipart")
 
 router.get("/", async (req, res, next) => {
@@ -46,22 +46,26 @@ router.post('/user', (req, res, next) => {
 router.post('/login', async (req, res, next) => {
     const { email, password } = req.body
     const user = await getUserByEmail(email)
-
     if (!user) {
         res.status(404).send("user not found with this email")
         return;
     }
+
     bcrypt.compare(password, user.passwordHash, function (err, result) {
+
         if (err) next(err);
         else {
+            console.log(result)
+
             if (result) {
-                console.log(user)
+                console.log("routes 2 user", user)
                 const token = jwt.sign({
                     id: user.id,
                     name: user.first_name,
                     lastName: user.last_name
                 }, 'secret');
-                console.log(user.id)
+
+                
                 res.send({ msg: "user added successfully", token, user: { mail: user.mail, id: user.id } });
             }
             else {
@@ -73,7 +77,7 @@ router.post('/login', async (req, res, next) => {
 router.delete("/:userId", auth, async (req, res) => {
     // console.log(req.user.id)
     const userId = req.user.id;
-    const  userIdDelete  = req.params
+    const userIdDelete = req.params
     // console.log("userIdDelete", userIdDelete)
     // console.log("animalId",animalId)
     const user = await getUserById(userIdDelete)
@@ -87,10 +91,38 @@ router.delete("/:userId", auth, async (req, res) => {
     try {
         console.log(userIdDelete)
         await deleteUser(userIdDelete);
-        console.log("object2")
+        // console.log("object2")
         res.status(202).send({ message: 'user deleted successfully' })
     } catch (err) {
         // next(err)
+    }
+})
+
+router.get('/:id', auth, async (req, res) => {
+    console.log("object")
+    const id = req.params.id;
+    console.log(id)
+    const user = await getUserById(id)
+    res.send({ user })
+})
+
+router.put('/:id', auth, async (req, res) => {
+    const id = req.params.id;
+    const userNewInfo = req.body
+    const changes = changeUser(userNewInfo, id)
+})
+
+router.get('mail/:email', auth, async (req, res, next) => {
+    try {
+        const { email } = req.params
+        console.log('before')
+        const user = await getUserByEmail(email)
+        console.log('after')
+
+        res.send({ user })
+
+    } catch (err) {
+        next(err)
     }
 })
 
