@@ -58,7 +58,6 @@ router.post('/login', async (req, res, next) => {
             console.log(result)
 
             if (result) {
-                console.log("routes 2 user", user)
                 const token = jwt.sign({
                     id: user.id,
                     name: user.first_name,
